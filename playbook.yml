@@ -1,0 +1,45 @@
+--- 
+- 
+  become: true
+  hosts: all
+  tasks: 
+    - 
+      docker_volume: 
+        name: db_data
+      name: "creating db_data"
+    - 
+      docker_network: 
+        name: mysqlnet
+      name: "creating mysqlnet"
+    - 
+      docker_container: 
+        env: 
+          MYSQL_DATABASE: wordpress
+          MYSQL_PASSWORD: wordpress
+          MYSQL_ROOT_PASSWORD: somewordpress
+          MYSQL_USER: wordpress
+        image: "mysql:5.7"
+        name: test-mysql
+        networks: 
+          - 
+            name: mysqlnet
+        restart: true
+        volumes: 
+          - "db_data:/var/lib/mysql:rw"
+      name: "launching test-mysql"
+    - 
+      docker_container: 
+        env: 
+          WORDPRESS_DB_HOST: "test-mysql:3306"
+          WORDPRESS_DB_NAME: wordpress
+          WORDPRESS_DB_PASSWORD: wordpress
+          WORDPRESS_DB_USER: wordpress
+        image: "wordpress:latest"
+        name: test-wordpress
+        networks: 
+          - 
+            name: mysqlnet
+        ports: 
+          - "8080:80"
+        restart: true
+      name: "lauching test-wordpress"
